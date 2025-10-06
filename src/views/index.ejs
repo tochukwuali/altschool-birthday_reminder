@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Birthday Reminder</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin:0; background:#0f172a; color:#e2e8f0; }
+    .container { max-width:900px; margin: 48px auto; padding: 0 16px; }
+    .card { background:#0b1220; border:1px solid #1f2937; border-radius:12px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.4); }
+    h1 { margin:0 0 12px; font-size:28px; }
+    p.sub { margin:0 0 24px; color:#94a3b8; }
+    form { display:grid; grid-template-columns: 1fr; gap:16px; }
+    label { display:block; font-weight:600; margin-bottom:8px; }
+    input { width:100%; padding:10px 12px; background:#0a0f1a; border:1px solid #243047; color:#e2e8f0; border-radius:8px; }
+    input:focus { outline:2px solid #2563eb; border-color:#2563eb; }
+    button { padding:14px 20px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; width:auto; }
+    @media (max-width: 640px) {
+      button { width:100%; }
+    }
+    @media (min-width: 641px) {
+      button { min-width: 160px; }
+    }
+    button:hover { background:#1d4ed8; }
+    .errors { margin-top:16px; background:#1b263b; border:1px solid #2a3b5f; color:#fca5a5; padding:12px; border-radius:8px; }
+    table { width:100%; border-collapse:collapse; margin-top:24px; }
+    th, td { text-align:left; padding:12px; border-bottom:1px solid #1f2937; }
+    th { color:#a5b4fc; }
+    .muted { color:#94a3b8; font-size:14px; }
+  </style>
+  <!-- Minimal client-side validation to improve UX -->
+  <script>
+    function validate(e) {
+      const email = document.getElementById('email');
+      const username = document.getElementById('username');
+      const dob = document.getElementById('dateOfBirth');
+      if (!email.value || !email.value.includes('@')) { alert('Please enter a valid email.'); e.preventDefault(); return false; }
+      if (!username.value) { alert('Please enter a username.'); e.preventDefault(); return false; }
+      if (!dob.value) { alert('Please select your date of birth.'); e.preventDefault(); return false; }
+      return true;
+    }
+  </script>
+  </head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>🎂 Birthday Reminder</h1>
+      <p class="sub">Collect birthdays and automatically send wishes every day at 7am.</p>
+      <form action="/users" method="post" onsubmit="return validate(event)">
+        <div>
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" value="<%= values.username || '' %>" placeholder="Jane Doe" required />
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="<%= values.email || '' %>" placeholder="jane@example.com" required />
+        </div>
+        <div>
+          <label for="dateOfBirth">Date of Birth</label>
+          <input type="date" id="dateOfBirth" name="dateOfBirth" value="<%= values.dateOfBirth || '' %>" required />
+        </div>
+        <div>
+          <button type="submit">Add</button>
+        </div>
+      </form>
+      <% if (errors && errors.length) { %>
+        <div class="errors">
+          <ul>
+            <% errors.forEach(function(err){ %>
+              <li><%= err.msg %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Date of Birth</th>
+            <th class="muted">Added</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (users && users.length) { %>
+            <% users.forEach(function(u){ %>
+              <tr>
+                <td><%= u.username %></td>
+                <td><%= u.email %></td>
+                <td><%= u.date_of_birth %></td>
+                <td class="muted"><%= u.created_at %></td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="4" class="muted">No users yet. Add some birthdays above.</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
+
+
