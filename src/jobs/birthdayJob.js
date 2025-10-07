@@ -21,4 +21,3 @@ function startBirthdayJob() {
 
 module.exports = { startBirthdayJob };
 
-

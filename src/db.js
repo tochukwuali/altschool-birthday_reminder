@@ -1,7 +1,10 @@
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 
-const dbPath = path.join(__dirname, '..', 'data', 'app.db');
+// Use /data for production (Fly.io volume), local data/ for development
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? '/data/app.db' 
+  : path.join(__dirname, '..', 'data', 'app.db');
 
 let db;
 
@@ -30,7 +33,9 @@ function migrate() {
 // Run migrations if called directly via npm run migrate
 if (require.main === module) {
   const fs = require('fs');
-  const dir = path.join(__dirname, '..', 'data');
+  const dir = process.env.NODE_ENV === 'production' 
+    ? '/data' 
+    : path.join(__dirname, '..', 'data');
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -42,5 +47,4 @@ module.exports = {
   getDb,
   migrate,
 };
-
 

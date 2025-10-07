@@ -55,4 +55,3 @@ async function postUser(req, res) {
 
 module.exports = { getHome, postUser };
 
-

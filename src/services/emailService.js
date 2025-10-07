@@ -26,4 +26,3 @@ async function sendBirthdayEmail({ to, username }) {
 
 module.exports = { sendBirthdayEmail };
 
-

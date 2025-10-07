@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "a birthday reminder that helps the user keep track of birthdays and send birthday messages to them",
   "main": "src/server.js",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
@@ -20,7 +23,7 @@
   },
   "homepage": "https://github.com/tochukwuali/altschool-birthday_reminder#readme",
   "dependencies": {
-    "better-sqlite3": "^9.6.0",
+    "sqlite3": "^5.1.7",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
@@ -32,3 +35,4 @@
     "nodemon": "^3.1.7"
   }
 }
+
