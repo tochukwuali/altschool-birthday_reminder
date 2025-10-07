@@ -1,36 +1,50 @@
-const { getDb } = require('../db-postgres');
+const { getDb } = require('../db');
 
-async function createUser({ username, email, dateOfBirth }) {
-  const pool = getDb();
-  const result = await pool.query(
-    'INSERT INTO users (username, email, date_of_birth) VALUES ($1, $2, $3) RETURNING *',
-    [username, email.toLowerCase(), dateOfBirth]
-  );
-  return result.rows[0];
+function createUser({ username, email, dateOfBirth }) {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    db.run(
+      'INSERT INTO users (username, email, date_of_birth) VALUES (?, ?, ?)',
+      [username, email.toLowerCase(), dateOfBirth],
+      function(err) {
+        if (err) reject(err);
+        else resolve({ id: this.lastID, username, email: email.toLowerCase(), dateOfBirth });
+      }
+    );
+  });
 }
 
-async function findUserByEmail(email) {
-  const pool = getDb();
-  const result = await pool.query(
-    'SELECT * FROM users WHERE email = $1',
-    [email.toLowerCase()]
-  );
-  return result.rows[0];
+function findUserByEmail(email) {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    db.get('SELECT * FROM users WHERE email = ?', [email.toLowerCase()], (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
 }
 
-async function listUsers() {
-  const pool = getDb();
-  const result = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
-  return result.rows;
+function listUsers() {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    db.all('SELECT * FROM users ORDER BY created_at DESC', (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
 }
 
-async function listUsersWithBirthdayToday() {
-  const pool = getDb();
-  const result = await pool.query(`
-    SELECT * FROM users
-    WHERE TO_CHAR(date_of_birth, 'MM-DD') = TO_CHAR(NOW(), 'MM-DD')
-  `);
-  return result.rows;
+function listUsersWithBirthdayToday() {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    db.all(`
+      SELECT * FROM users
+      WHERE strftime('%m-%d', date_of_birth) = strftime('%m-%d', 'now')
+    `, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
 }
 
 module.exports = {
