@@ -1,46 +1,44 @@
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
+require('dotenv').config();
 
-// Use /data for production (Fly.io volume), local data/ for development
-const dbPath = process.env.NODE_ENV === 'production' 
-  ? '/data/app.db' 
-  : path.join(__dirname, '..', 'data', 'app.db');
-
-let db;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
 
 function getDb() {
-  if (!db) {
-    db = new sqlite3.Database(dbPath);
-  }
-  return db;
+  return pool;
 }
 
-function migrate() {
-  const database = getDb();
-  database.serialize(() => {
-    database.run(`
+async function migrate() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
       CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         username TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
-        date_of_birth TEXT NOT NULL,
-        created_at TEXT DEFAULT (datetime('now'))
+        date_of_birth DATE NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `);
-  });
+    console.log('Database migrated.');
+  } catch (err) {
+    console.error('Migration error:', err);
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 // Run migrations if called directly via npm run migrate
 if (require.main === module) {
-  const fs = require('fs');
-  const dir = process.env.NODE_ENV === 'production' 
-    ? '/data' 
-    : path.join(__dirname, '..', 'data');
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  migrate();
-  console.log('Database migrated.');
+  migrate()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
 }
 
 module.exports = {
